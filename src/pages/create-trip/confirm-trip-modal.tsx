@@ -1,5 +1,6 @@
 import { Mail, User, X } from 'lucide-react'
 import { FormEvent } from 'react'
+import { Button } from '../../components/button'
 
 interface ConfirmTripModalProps {
   closeConfirmTripModal: () => void
@@ -53,12 +54,10 @@ export function ConfirmTripModal({
               className="bg-transparent text-base placeholder-zinc-400 outline-none flex-1"
             />
           </div>
-          <button
-            type="submit"
-            className="bg-lime-300 text-lime-950 rounded-lg px-5 font-medium flex items-center justify-center w-full h-11 hover:bg-lime-400 "
-          >
+
+          <Button type="submit" size="full">
             Confirmar criação da viagem
-          </button>
+          </Button>
         </form>
       </div>
     </div>
