@@ -9,3 +9,19 @@
 input {
   color-scheme: dark;
 }
+
+:root {
+  --rdb-accent-color: #bef254;
+  --rdb-accent-color-dark: #bef25;
+}
+
+[data-theme="dark"] .rdp,
+.dark .rdp {
+  --rdp-accent-color: var(--rdp-accent-color-dark);
+  --rdp-background-color: var(--rdp-background-color-dark);
+}
+
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+  color: black;
+  background-color: #bef254;
+}
