@@ -1,28 +1,17 @@
 import { CircleCheck } from 'lucide-react'
 import { useParams } from 'react-router-dom'
-import { api } from '../../lib/axios'
-import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-
-interface Activity {
-  date: string
-  activities: {
-    id: string
-    title: string
-    occurs_at: string
-  }[]
-}
+import { useQuery } from '@tanstack/react-query'
+import { getActivities } from '../../api/get-activities'
 
 export function Activities() {
-  const [activities, setActivities] = useState<Activity[] | null>(null)
   const { tripId } = useParams()
 
-  useEffect(() => {
-    api
-      .get(`/trips/${tripId}/activities`)
-      .then((response) => setActivities(response.data.activities))
-  }, [tripId])
+  const { data: activities } = useQuery({
+    queryFn: () => getActivities({ tripId }),
+    queryKey: ['trip-activities', tripId],
+  })
 
   return (
     <div className="space-y-8">

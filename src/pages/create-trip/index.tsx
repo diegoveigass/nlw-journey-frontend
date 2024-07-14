@@ -5,7 +5,8 @@ import { ConfirmTripModal } from './confirm-trip-modal'
 import { DestinationAndDateStep } from './steps/destination-and-date-step'
 import { InviteGuestsStep } from './steps/invite-guests-step'
 import { DateRange } from 'react-day-picker'
-import { api } from '../../lib/axios'
+import { useMutation } from '@tanstack/react-query'
+import { createTrip } from '../../api/create-trip'
 
 export function CreateTripPage() {
   const navigate = useNavigate()
@@ -21,6 +22,13 @@ export function CreateTripPage() {
   const [eventStartAndEndDates, setEventStartAndEndDates] = useState<
     DateRange | undefined
   >()
+
+  const { mutateAsync: tripCreate, isPending } = useMutation({
+    mutationFn: createTrip,
+    async onSuccess(data) {
+      navigate(`/trips/${data.tripId}`)
+    },
+  })
 
   function openGuestsInput() {
     setIsGuestsInputOpen(true)
@@ -70,44 +78,36 @@ export function CreateTripPage() {
     )
   }
 
-  async function createTrip(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    console.log({
-      destination,
-      eventStartAndEndDates,
-      ownerEmail,
-      ownerName,
-      emailsToInvite,
-    })
+  async function handleCreateTrip(event: FormEvent<HTMLFormElement>) {
+    try {
+      event.preventDefault()
+      if (!destination) {
+        return
+      }
 
-    if (!destination) {
-      return
+      if (!eventStartAndEndDates?.from || !eventStartAndEndDates.to) {
+        return
+      }
+
+      if (emailsToInvite.length === 0) {
+        return
+      }
+
+      if (!ownerName || !ownerEmail) {
+        return
+      }
+
+      await tripCreate({
+        destination,
+        starts_at: eventStartAndEndDates.from,
+        ends_at: eventStartAndEndDates.to,
+        emails_to_invite: emailsToInvite,
+        owner_name: ownerName,
+        owner_email: ownerEmail,
+      })
+    } catch (error) {
+      console.error(error)
     }
-
-    if (!eventStartAndEndDates?.from || !eventStartAndEndDates.to) {
-      return
-    }
-
-    if (emailsToInvite.length === 0) {
-      return
-    }
-
-    if (!ownerName || !ownerEmail) {
-      return
-    }
-
-    const response = await api.post('/trips', {
-      destination,
-      starts_at: eventStartAndEndDates.from,
-      ends_at: eventStartAndEndDates.to,
-      emails_to_invite: emailsToInvite,
-      owner_name: ownerName,
-      owner_email: ownerEmail,
-    })
-
-    const { tripId } = response.data
-
-    navigate(`/trips/${tripId}`)
   }
 
   return (
@@ -165,9 +165,10 @@ export function CreateTripPage() {
       {isConfirmTripModalOpen && (
         <ConfirmTripModal
           closeConfirmTripModal={closeConfirmTripModal}
-          createTrip={createTrip}
+          createTrip={handleCreateTrip}
           setOwnerName={setOwnerName}
           setOwnerEmail={setOwnerEmail}
+          isPending={isPending}
         />
       )}
     </div>

@@ -1,8 +1,9 @@
 import { Calendar, Tag, X } from 'lucide-react'
 import { Button } from '../../components/button'
 import { FormEvent } from 'react'
-import { api } from '../../lib/axios'
 import { useParams } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createActivity } from '../../api/create-activity'
 
 interface CreateActivityModalProps {
   closeCreateActivityModal: () => void
@@ -11,21 +12,36 @@ interface CreateActivityModalProps {
 export function CreateActivityModal({
   closeCreateActivityModal,
 }: CreateActivityModalProps) {
+  const queryClient = useQueryClient()
   const { tripId } = useParams()
 
-  async function createActivity(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  const { mutateAsync: activityCreate, isPending } = useMutation({
+    mutationFn: createActivity,
+    async onSuccess() {
+      closeCreateActivityModal()
+      queryClient.invalidateQueries({
+        queryKey: ['trip-activities', tripId],
+      })
+    },
+  })
 
-    const data = new FormData(event.currentTarget)
+  async function handleCreateActivity(event: FormEvent<HTMLFormElement>) {
+    try {
+      event.preventDefault()
 
-    const title = data.get('title')?.toString()
-    const occurs_at = data.get('occurs_at')?.toString()
+      const data = new FormData(event.currentTarget)
 
-    console.log({ title, occurs_at })
+      const title = data.get('title')?.toString()
+      const occurs_at = data.get('occurs_at')?.toString()
 
-    await api.post(`/trips/${tripId}/activities`, { title, occurs_at })
+      if (!title || !occurs_at) {
+        return
+      }
 
-    window.document.location.reload()
+      await activityCreate({ tripId, occurs_at, title })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -43,7 +59,7 @@ export function CreateActivityModal({
           </p>
         </div>
 
-        <form onSubmit={createActivity} className="space-y-3">
+        <form onSubmit={handleCreateActivity} className="space-y-3">
           <div className="py-2.5 px-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center gap-2 h-14">
             <Tag className="size-5 text-zinc-400" />
             <input
@@ -62,7 +78,9 @@ export function CreateActivityModal({
             />
           </div>
 
-          <Button size="full">Salvar atividade</Button>
+          <Button size="full" disabled={isPending}>
+            Salvar atividade
+          </Button>
         </form>
       </div>
     </div>
