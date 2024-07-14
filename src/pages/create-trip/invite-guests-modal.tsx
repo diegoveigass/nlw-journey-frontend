@@ -1,20 +1,31 @@
 import { AtSign, Plus, X } from 'lucide-react'
 import { FormEvent } from 'react'
 import { Button } from '../../components/button'
+import { useModal } from '../../context/modal-context'
+import { useTrip } from '../../context/trip-context'
 
-interface InviteGuestsModalProps {
-  closeGuestsModal: () => void
-  emailsToInvite: string[]
-  addNewEmailToInvite: (event: FormEvent<HTMLFormElement>) => void
-  removeEmailFromInvite: (email: string) => void
-}
+export function InviteGuestsModal() {
+  const { closeGuestsModal } = useModal()
+  const { emailsToInvite, addEmailToInvite, removeEmailFromInvite } = useTrip()
 
-export function InviteGuestsModal({
-  addNewEmailToInvite,
-  closeGuestsModal,
-  emailsToInvite,
-  removeEmailFromInvite,
-}: InviteGuestsModalProps) {
+  function addNewEmailToInvite(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const email = data.get('email')?.toString()
+
+    if (!email) {
+      return
+    }
+
+    if (emailsToInvite.includes(email)) {
+      return
+    }
+
+    addEmailToInvite(email)
+
+    event.currentTarget.reset()
+  }
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
       <div className="w-[640px] rounded-xl py-5 px-6 shadow-shape bg-zinc-900 space-y-5">

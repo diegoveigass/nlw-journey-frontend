@@ -1,28 +1,20 @@
 import { ArrowRight, Calendar, MapPin, Settings2, X } from 'lucide-react'
 import { Button } from '../../../components/button'
 import { useState } from 'react'
-import { DateRange, DayPicker } from 'react-day-picker'
+import { DayPicker } from 'react-day-picker'
 
 import 'react-day-picker/dist/style.css'
 import { format } from 'date-fns'
+import { useModal } from '../../../context/modal-context'
+import { useTrip } from '../../../context/trip-context'
 
-interface DestinationAndDateStepProps {
-  isGuestsInputOpen: boolean
-  closeGuestsInput: () => void
-  openGuestsInput: () => void
-  setDestination: (destination: string) => void
-  setEventStartAndEndDates: (dates: DateRange | undefined) => void
-  eventStartAndEndDates: DateRange | undefined
-}
+export function DestinationAndDateStep() {
+  const {
+    setTripDestination,
+    setTripEventStartAndEndDates,
+    eventStartAndEndDates,
+  } = useTrip()
 
-export function DestinationAndDateStep({
-  closeGuestsInput,
-  isGuestsInputOpen,
-  openGuestsInput,
-  setDestination,
-  setEventStartAndEndDates,
-  eventStartAndEndDates,
-}: DestinationAndDateStepProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 
   function openDatePicker() {
@@ -32,6 +24,8 @@ export function DestinationAndDateStep({
   function closeDatePicker() {
     setIsDatePickerOpen(false)
   }
+
+  const { isGuestsInputOpen, closeGuestsInput, openGuestsInput } = useModal()
 
   const displayedDate =
     eventStartAndEndDates &&
@@ -51,7 +45,7 @@ export function DestinationAndDateStep({
           type="text"
           placeholder="Para onde você vai?"
           className="bg-transparent text-lg placeholder-zinc-400 outline-none flex-1"
-          onChange={(event) => setDestination(event.target.value)}
+          onChange={(event) => setTripDestination(event.target.value)}
         />
       </div>
       <button
@@ -79,7 +73,7 @@ export function DestinationAndDateStep({
             <DayPicker
               mode="range"
               selected={eventStartAndEndDates}
-              onSelect={setEventStartAndEndDates}
+              onSelect={setTripEventStartAndEndDates}
             />
           </div>
         </div>
